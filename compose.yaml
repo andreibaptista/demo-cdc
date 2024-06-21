@@ -1,0 +1,47 @@
+version: '3'
+services:
+  demo_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    links:
+      - "database"
+      - "kafka"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/testDB
+      SPRING_DATASOURCE_USERNAME: testUser
+      SPRING_DATASOURCE_PASSWORD: testPassword
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  database:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: testDB
+      POSTGRES_USER: testUser
+      POSTGRES_PASSWORD: testPassword
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+  debezium:
+    image: debezium/connect:1.7
+    hostname: debezium
+    ports:
+      - 8083:8083
+    links:
+      - kafka
+      - database
+    environment:
+      - BOOTSTRAP_SERVERS=kafka:9092
+      - GROUP_ID=1
+      - CONFIG_STORAGE_TOPIC=my_connect_configs
+      - OFFSET_STORAGE_TOPIC=my_connect_offsets
+      - STATUS_STORAGE_TOPIC=my_connect_statuses
