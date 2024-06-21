@@ -1,0 +1,20 @@
+{
+  "name": "debezium-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "<your-db-hostname>",
+    "database.port": "<your-db-port>",
+    "database.user": "<username>",
+    "database.password": "<password>",
+    "database.dbname": "<db-name>",
+    "database.server.id": "1",
+    "database.server.name": "dbserver1",
+    "table.include.list": "public.message",
+    "plugin.name": "pgoutput",
+    "tombstones.on.delete": "false",
+    "transforms": "route",
+    "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
+    "transforms.route.regex": "dbserver1.public.(.*)",
+    "transforms.route.replacement": "$1"
+  }
+}
